@@ -1,0 +1,80 @@
+{
+  "env": {
+    "GOOGLE_APPLICATION_CREDENTIALS": "/Users/{{USERNAME}}/.openclaw/vertex-sa.json",
+    "GOOGLE_CLOUD_LOCATION": "us-central1",
+    "GOOGLE_CLOUD_PROJECT": "{{GCP_PROJECT_ID}}"
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "google-vertex/gemini-2.5-flash" },
+      "models": {
+        "google-vertex/gemini-2.0-flash": { "alias": "flash" },
+        "google-vertex/gemini-2.5-pro": { "alias": "pro" },
+        "google-vertex/gemini-2.5-flash": {}
+      },
+      "workspace": "/Users/{{USERNAME}}/.openclaw/workspace",
+      "compaction": { "mode": "safeguard" }
+    },
+    "list": [
+      { "id": "main", "tools": { "allow": ["claude-code"] } }
+    ]
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "command-logger": { "enabled": true },
+        "session-memory": { "enabled": true }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "{{TELEGRAM_BOT_TOKEN}}",
+      "groupPolicy": "allowlist",
+      "streaming": "off"
+    }
+  },
+  "gateway": {
+    "port": 18792,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "{{GATEWAY_TOKEN}}"
+    },
+    "tailscale": { "mode": "off" },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "calendar.add",
+        "contacts.add",
+        "reminders.add"
+      ]
+    }
+  },
+  "skills": {
+    "entries": {
+      "nano-banana-pro": { "apiKey": "{{NANO_BANANA_API_KEY}}" },
+      "notion": { "enabled": true, "apiKey": "{{NOTION_API_KEY}}" }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "claude-code": { "enabled": true }
+    }
+  }
+}
