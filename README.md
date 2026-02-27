@@ -1,24 +1,37 @@
-# OpenClaw 재설치 매뉴얼
+# OpenClaw 복구 플레이북
 
-> 작성일: 2026-02-27
-> 목적: 신규 Mac 또는 포맷 후 OpenClaw + Vertex AI + Claude Code 플러그인을 처음부터 복구
-
-이 폴더의 파일들을 활용해 순서대로 따라가면 완전한 환경을 재구성할 수 있습니다.
+> 목적: 맥이 리셋되거나 포맷된 상황에서 **이 레포 하나만 있으면** Dave 전체 환경을 처음부터 복구할 수 있다.
+> 예상 소요: 30~45분
 
 ---
 
-## 전제 조건
+## 이 레포가 커버하는 것
 
-설치 전 다음 항목이 준비되어 있어야 합니다.
+| 파일 | 내용 |
+|------|------|
+| `README.md` | 이 파일 — 제로에서 복구하는 순서 가이드 |
+| `openclaw.json.template` | `~/.openclaw/openclaw.json` 기반 템플릿 |
+| `SETUP_VERTEX.md` | Vertex AI 연동 상세 가이드 (GCP, 서비스 계정, 모델 설정) |
+| `SETUP_SKILLS.md` | Dave 보안 프로토콜 + 업무 스킬 정의 |
+| `SETUP_CLAUDE_CODE.md` | Claude Code 플러그인 설치 및 연동 |
+| `workspace/` | Dave의 정체성·운영 지침 파일 (`~/.openclaw/workspace/`에 배포) |
 
-| 항목 | 확인 방법 |
-|------|----------|
-| Homebrew | `brew --version` |
-| Node.js v22+ | `node --version` |
-| Google Cloud SDK | `gcloud --version` |
-| Claude Code CLI | `~/.local/bin/claude --version` |
-| 텔레그램 봇 토큰 | @BotFather에서 발급 |
-| Vertex AI 서비스 계정 키 | `vertex-ai/credentials/README.txt` 참고 |
+---
+
+## 사전 체크리스트
+
+아래 항목이 모두 준비됐는지 확인 후 진행.
+
+| 항목 | 확인 명령 | 비고 |
+|------|----------|------|
+| Homebrew | `brew --version` | 없으면 https://brew.sh |
+| Node.js v22+ | `node --version` | 없으면 `brew install node` |
+| Google Cloud SDK | `gcloud --version` | 없으면 https://cloud.google.com/sdk |
+| Claude Code CLI | `~/.local/bin/claude --version` | 없으면 `npm install -g @anthropic-ai/claude-code` |
+| Telegram 봇 토큰 | — | 기존 봇 토큰 확인 or @BotFather에서 재발급 |
+| Vertex AI 서비스 계정 키 | — | 외장 SSD 보관 위치: Step 3 참고 |
+| Nano Banana API Key | — | Google AI Studio에서 발급 |
+| Notion API Key | — | Notion Integration에서 발급 |
 
 ---
 
@@ -37,68 +50,91 @@ openclaw --version   # 2026.2.25 이상 확인
 openclaw onboard
 ```
 
-텔레그램 봇 토큰, Gateway 토큰 등 초기 설정을 인터랙티브하게 입력합니다.
-(이 단계에서 `~/.openclaw/` 디렉터리와 기본 `openclaw.json`이 생성됩니다.)
+인터랙티브 프롬프트에서 Telegram 봇 토큰, Gateway 토큰 등을 입력한다.
+이 단계가 완료되면 `~/.openclaw/` 디렉터리와 기본 `openclaw.json`이 생성된다.
 
 ---
 
 ## Step 3. Vertex AI 서비스 계정 키 배치
 
+서비스 계정 키 원본은 외장 SSD에 보관되어 있다:
+
 ```bash
-# 키 파일 위치: vertex-ai/credentials/README.txt 참고
+# 원본 위치: /Volumes/SSD/OpenClaw Config/gen-lang-client-0740646035-c6de06dedc78.json
 cp "/Volumes/SSD/OpenClaw Config/gen-lang-client-0740646035-c6de06dedc78.json" \
    ~/.openclaw/vertex-sa.json
 chmod 600 ~/.openclaw/vertex-sa.json
 ```
 
+> 키 파일이 분실된 경우: GCP Console → IAM & Admin → Service Accounts → `vertex-express` → Keys 탭 → 새 키 발급
+> GCP 프로젝트: `gen-lang-client-0740646035`
+> 서비스 계정: `vertex-express@gen-lang-client-0740646035.iam.gserviceaccount.com`
+
+Vertex AI 전체 설정 (GCP 프로젝트 신규 생성 포함) → **[SETUP_VERTEX.md](./SETUP_VERTEX.md)** 참고.
+
 ---
 
-## Step 4. openclaw.json 전체 설정
+## Step 4. openclaw.json 설정
 
 ```bash
-# 이 폴더의 템플릿을 기반으로 작성
-cp OpenClaw_Setup/openclaw.json.template ~/.openclaw/openclaw.json
+cp ~/dev/Openclaw-Setup/openclaw.json.template ~/.openclaw/openclaw.json
+nano ~/.openclaw/openclaw.json
 ```
 
-이후 `nano ~/.openclaw/openclaw.json`으로 열어 아래 placeholder를 실제 값으로 교체:
+아래 placeholder를 실제 값으로 모두 교체:
 
 | Placeholder | 실제 값 |
 |-------------|---------|
-| `{{USERNAME}}` | `kms` (macOS 사용자명) |
+| `{{USERNAME}}` | `kms` |
 | `{{GCP_PROJECT_ID}}` | `gen-lang-client-0740646035` |
 | `{{TELEGRAM_BOT_TOKEN}}` | BotFather에서 받은 토큰 |
-| `{{GATEWAY_TOKEN}}` | 임의의 안전한 문자열 |
+| `{{GATEWAY_TOKEN}}` | 임의의 안전한 문자열 (예: `openssl rand -hex 32`) |
 | `{{NANO_BANANA_API_KEY}}` | Google AI Studio API Key |
 | `{{NOTION_API_KEY}}` | Notion Integration API Key |
 
-> Vertex AI 상세 설정은 `vertex-ai/SETUP_MANUAL.md` 참고.
-
 ---
 
-## Step 5. Workspace 파일 설치
+## Step 5. Workspace 파일 배포
+
+Dave의 정체성, 운영 지침, 보안 프로토콜, 스킬 정의가 담긴 파일들을 workspace에 배포한다.
 
 ```bash
 mkdir -p ~/.openclaw/workspace
-cp -r OpenClaw_Setup/workspace/* ~/.openclaw/workspace/
+cp -r ~/dev/Openclaw-Setup/workspace/* ~/.openclaw/workspace/
 ```
 
-포함 파일: `SOUL.md`, `USER.md`, `AGENTS.md`, `TOOLS.md`, `IDENTITY.md`, `HEARTBEAT.md`
+배포되는 파일:
+
+| 파일 | 내용 |
+|------|------|
+| `SOUL.md` | Dave의 정체성과 행동 원칙 |
+| `IDENTITY.md` | Dave의 기본 정보 |
+| `USER.md` | 문섭님 프로필 및 작업 공간 경로 |
+| `AGENTS.md` | 세션 시작 루틴, 메모리 관리, 그룹챗 행동 규칙 |
+| `TOOLS.md` | 업무 스킬 정의 (candidate-scan, company-brief, meeting-prep) |
+| `SECURITY.md` | 보안 프로토콜 (PII 처리, 폴더 접근 제한) |
+| `HEARTBEAT.md` | 주기적 체크 작업 목록 |
+| `PROJECTS.md` | 진행 중인 프로젝트 현황 |
+
+Dave 보안 지침 및 스킬 상세 설명 → **[SETUP_SKILLS.md](./SETUP_SKILLS.md)** 참고.
 
 ---
 
 ## Step 6. Claude Code 플러그인 설치
 
 ```bash
-# 플러그인 소스를 dev 폴더로 복사
-cp -r OpenClaw_Setup/plugins/claude-code ~/dev/openclaw-claude-code
+# 플러그인 소스 클론
+git clone https://github.com/withusps-coder/openclaw-claude-code.git ~/dev/openclaw-claude-code
 
 # 의존성 설치
 cd ~/dev/openclaw-claude-code && npm install
 
-# OpenClaw에 플러그인 등록 및 활성화
+# OpenClaw에 등록
 openclaw plugins install ~/dev/openclaw-claude-code
 openclaw plugins enable claude-code
 ```
+
+Claude Code 플러그인 상세 설정 → **[SETUP_CLAUDE_CODE.md](./SETUP_CLAUDE_CODE.md)** 참고.
 
 ---
 
@@ -109,12 +145,12 @@ openclaw gateway stop
 openclaw gateway install   # LaunchAgent plist에 env 변수 반영
 ```
 
-> `gateway install`을 실행해야 `openclaw.json`의 `env` 블록이 시스템에 적용됩니다.
-> 단순 stop/start로는 환경변수가 반영되지 않습니다.
+> `gateway install`을 실행해야 `openclaw.json`의 `env` 블록이 시스템에 반영된다.
+> 단순 `stop/start`로는 환경변수가 적용되지 않는다.
 
 ---
 
-## Step 8. 모델 alias 설정 (선택)
+## Step 8. 모델 alias 설정
 
 ```bash
 openclaw models aliases add flash google-vertex/gemini-2.0-flash
@@ -123,8 +159,8 @@ openclaw models aliases add pro google-vertex/gemini-2.5-pro
 
 이후 전환:
 ```bash
-openclaw models set pro    # gemini-2.5-pro
-openclaw models set flash  # gemini-2.0-flash
+openclaw models set pro    # gemini-2.5-pro (기본)
+openclaw models set flash  # gemini-2.0-flash (빠른 작업)
 ```
 
 ---
@@ -138,7 +174,7 @@ openclaw models status
 openclaw plugins list
 ```
 
-텔레그램에서:
+Telegram에서:
 ```
 /new           ← 새 세션 시작
 /model status  ← 현재 모델 확인
@@ -146,47 +182,19 @@ openclaw plugins list
 
 Claude Code 동작 확인:
 ```
-# 텔레그램에서 봇에게
-코드 작업을 시작해줘
+텔레그램: "/tmp/test.txt 파일 만들어줘. 클로드코드로 해줘"
 ```
 
 ---
 
 ## 트러블슈팅
 
-| 증상 | 원인 | 해결책 |
-|------|------|--------|
-| stdin hanging (프로세스가 멈춤) | claude CLI가 stdin 대기 | `spawnAsync`에 `stdio: ['ignore','pipe','pipe']` 필수 |
-| tool이 agent에 노출 안 됨 | allowlist 누락 | `openclaw.json` → `agents.list[].tools.allow`에 `"claude-code"` 추가 |
-| plugin id mismatch 경고 | package.json name ≠ manifest id | `package.json`의 `name`을 `openclaw.plugin.json`의 `id`와 일치시킬 것 |
+| 증상 | 원인 | 해결 |
+|------|------|------|
 | `BILLING_DISABLED` | GCP 결제 미활성화 | Console에서 결제 계정 연결 |
 | `IAM_PERMISSION_DENIED` | 서비스 계정에 권한 없음 | IAM에서 Vertex AI User 역할 부여 |
-| 세션이 이전 모델 유지 | 기존 세션 캐시 | 텔레그램에서 `/new` 입력 |
-
----
-
-## 폴더 구조
-
-```
-OpenClaw_Setup/
-├── README.md                        ← 이 파일 (마스터 설치 가이드)
-├── openclaw.json.template           ← 설정 파일 템플릿
-├── vertex-ai/
-│   ├── SETUP_MANUAL.md              ← Vertex AI 연동 상세 가이드
-│   └── credentials/
-│       └── README.txt               ← 서비스 계정 키 파일 위치 안내
-├── workspace/                       ← Agent 지침 파일 백업
-│   ├── SOUL.md
-│   ├── USER.md
-│   ├── AGENTS.md
-│   ├── TOOLS.md
-│   ├── IDENTITY.md
-│   └── HEARTBEAT.md
-└── plugins/
-    └── claude-code/                 ← claude-code 플러그인 소스
-        ├── index.js
-        ├── package.json
-        ├── openclaw.plugin.json
-        └── src/
-            └── claude-code-tool.js
-```
+| `404 Not Found` | 모델이 Vertex AI에 없음 | [SETUP_VERTEX.md](./SETUP_VERTEX.md) 모델 목록 참고 |
+| 세션이 이전 모델 유지 | 기존 세션 캐시 | Telegram에서 `/new` 입력 |
+| stdin hanging (프로세스 멈춤) | claude CLI가 stdin 대기 | `spawnAsync`에 `stdio: ['ignore','pipe','pipe']` 필수 |
+| tool이 agent에 노출 안 됨 | allowlist 누락 | `openclaw.json` → `agents.list[].tools.allow`에 `"claude-code"` 추가 |
+| plugin id mismatch 경고 | package.json name ≠ manifest id | `package.json`의 `name`을 `openclaw.plugin.json`의 `id`와 일치시킬 것 |

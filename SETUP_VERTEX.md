@@ -1,7 +1,6 @@
-# OpenClaw × Vertex AI 연동 매뉴얼
+# Vertex AI 연동 설정
 
-> 작성일: 2026-02-26
-> 목표: OpenClaw의 LLM을 Google Vertex AI (gemini-2.5-pro / gemini-2.0-flash)로 연동
+> GCP 프로젝트 준비부터 모델 alias 설정까지 — OpenClaw × Vertex AI 연동의 핵심 단계.
 
 ---
 
