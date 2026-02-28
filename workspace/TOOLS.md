@@ -63,4 +63,6 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
-Add whatever helps you do your job. This is your cheat sheet.
+## 브라우저
+
+- **주 사용 브라우저:** Comet
