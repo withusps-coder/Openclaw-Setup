@@ -13,7 +13,7 @@
         "google-vertex/gemini-2.5-flash": {}
       },
       "workspace": "/Users/{{USERNAME}}/.openclaw/workspace",
-      "compaction": { "mode": "safeguard" }
+      "compaction": { "mode": "safeguard", "keepRecentTokens": 40000 }
     },
     "list": [
       { "id": "main", "tools": { "allow": ["claude-code"] } }
@@ -43,7 +43,7 @@
       "dmPolicy": "pairing",
       "botToken": "{{TELEGRAM_BOT_TOKEN}}",
       "groupPolicy": "allowlist",
-      "streaming": "off"
+      "streaming": "partial"
     }
   },
   "gateway": {

@@ -91,6 +91,10 @@ nano ~/.openclaw/openclaw.json
 | `{{NANO_BANANA_API_KEY}}` | Google AI Studio API Key |
 | `{{NOTION_API_KEY}}` | Notion Integration API Key |
 
+> **주요 설정 참고**
+> - `streaming: "partial"` — 응답 생성 시작 즉시 Telegram에 타이핑 효과로 표시 (`off`로 두면 응답 완료까지 수 분간 아무것도 안 보임)
+> - `keepRecentTokens: 40000` — 대화가 길어져도 추론 속도 유지
+
 ---
 
 ## Step 5. Workspace 파일 배포
