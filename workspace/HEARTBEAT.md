@@ -16,9 +16,9 @@
 ### 실행 스크립트
 ```bash
 for f in SOUL.md AGENTS.md IDENTITY.md USER.md TOOLS.md SECURITY.md SKILLS_PLAN.md PROJECTS.md HEARTBEAT.md; do
-  cp ~/.openclaw/workspace/$f ~/dev/openclaw-setup/workspace/$f
+  cp ~/.openclaw/workspace/$f ~/dev/openclaw/openclaw-setup/workspace/$f
 done
-cd ~/dev/openclaw-setup
+cd ~/dev/openclaw/openclaw-setup
 git add workspace/
 git diff --staged --quiet || git commit -m "sync: workspace 동기화 $(date '+%Y-%m-%d')"
 git push origin main
